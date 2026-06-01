@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EC Finanzas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0a;--bg2:#111111;--bg3:#1a1a1a;--bg4:#222222;
+  --border:#2a2a2a;--border2:#333333;
+  --text:#e8e6df;--text2:#888880;--text3:#555550;
+  --accent:#d4a853;--accent2:#b8943f;
+  --green:#4caf7d;--red:#e05c5c;
+  --font-display:'Syne',sans-serif;--font-mono:'DM Mono',monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font-mono);min-height:100vh}
+h1,h2,h3,h4{font-family:var(--font-display);font-weight:700}
+
+/* NAV */
+.topnav{display:flex;align-items:center;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;padding:0 20px}
+.topnav-brand{display:flex;align-items:center;gap:10px;padding:8px 20px 8px 0;border-right:1px solid var(--border);flex-shrink:0;margin-right:8px}
+.topnav-brand img{height:40px;width:40px;object-fit:contain}
+.topnav-brand span{font-family:var(--font-display);font-weight:800;font-size:16px;color:var(--accent);letter-spacing:-0.5px}
+.topnav-links{display:flex;flex:1;justify-content:space-around}
+.topnav-links a{color:var(--text2);text-decoration:none;font-size:12px;padding:18px 10px;border-bottom:2px solid transparent;transition:all .2s;letter-spacing:.5px;text-align:center;white-space:nowrap}
+.topnav-links a:hover,.topnav-links a.active{color:var(--text);border-bottom-color:var(--accent)}
+
+/* LAYOUT */
+.page{display:none;padding:28px 24px;max-width:1400px;margin:0 auto}
+.page.active{display:block}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:20px;position:relative}
+.card-sm{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:14px 16px;position:relative}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.grid-2-3{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:20px}
+.stat-label{font-size:11px;color:var(--text2);letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px}
+.stat-val{font-size:22px;font-family:var(--font-display);font-weight:700;color:var(--text)}
+.stat-diff{font-size:12px;font-family:var(--font-mono);font-weight:400;margin-left:8px}
+.up{color:var(--green)}.down{color:var(--red)}.neutral{color:var(--text2)}
+
+/* SECTION TITLES */
+.sec-title{font-size:13px;letter-spacing:1.5px;color:var(--text2);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.sec-title::before{content:'';display:inline-block;width:3px;height:14px;background:var(--accent);border-radius:2px;flex-shrink:0}
+.page-title{font-size:28px;font-weight:800;color:var(--text);margin-bottom:24px;letter-spacing:-1px}
+.page-sub{font-size:13px;color:var(--text2);margin-bottom:24px;margin-top:-20px}
+
+/* CHARTS */
+.chart-wrap{position:relative;width:100%}
+
+/* DONUT LEGEND */
+.donut-legend{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:12px}
+.legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+/* TABLE */
+.fin-table{width:100%;border-collapse:collapse;font-size:12px}
+.fin-table th{color:var(--text2);font-weight:400;text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);letter-spacing:.5px;font-size:11px}
+.fin-table td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text)}
+.fin-table tr:last-child td{border-bottom:none}
+.fin-table tr:hover td{background:var(--bg3)}
+.fin-table .num{text-align:right;font-family:var(--font-mono)}
+.fin-table input{background:var(--bg4);border:1px solid var(--border2);color:var(--text);font-family:var(--font-mono);font-size:12px;padding:4px 8px;border-radius:4px;width:110px;text-align:right}
+.fin-table input:focus{outline:none;border-color:var(--accent)}
+.tag{display:inline-block;padding:2px 8px;border-radius:3px;font-size:10px;letter-spacing:.5px}
+.tag-gold{background:#2a2010;color:var(--accent);border:1px solid #3a3015}
+.tag-blue{background:#0f1e2e;color:#5b9bd5;border:1px solid #1a2e42}
+
+/* PROGRESS BAR */
+.prog-bar{height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;margin-top:6px}
+.prog-fill{height:100%;border-radius:2px;transition:width .5s}
+
+/* PCTG BADGE */
+.pct-badge{font-size:11px;padding:2px 6px;border-radius:3px}
+.pct-pos{background:#0f2018;color:var(--green)}
+.pct-neg{background:#2a0f0f;color:var(--red)}
+.pct-neu{background:var(--bg3);color:var(--text2)}
+
+/* COLLAPSIBLE DB */
+.db-toggle{width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-family:var(--font-mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:10px 14px;border-radius:6px;cursor:pointer;text-align:left;display:flex;align-items:center;justify-content:space-between;transition:all .2s;margin-top:12px}
+.db-toggle:hover{border-color:var(--accent);color:var(--text)}
+.db-body{display:none;margin-top:10px}
+.db-body.open{display:block}
+
+/* EDIT MODAL */
+.edit-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;align-items:center;justify-content:center}
+.edit-overlay.open{display:flex}
+.edit-modal{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:24px;width:580px;max-width:95vw;max-height:80vh;overflow-y:auto}
+.edit-modal h3{font-family:var(--font-display);font-size:16px;margin-bottom:16px;color:var(--text)}
+.edit-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.edit-row input,.edit-row select{background:var(--bg4);border:1px solid var(--border2);color:var(--text);font-family:var(--font-mono);font-size:12px;padding:6px 10px;border-radius:4px;flex:1}
+.edit-row input:focus,.edit-row select:focus{outline:none;border-color:var(--accent)}
+.btn{padding:8px 16px;border-radius:5px;font-family:var(--font-mono);font-size:12px;cursor:pointer;border:none;transition:all .2s}
+.btn-gold{background:var(--accent);color:#000}
+.btn-gold:hover{background:var(--accent2)}
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--text2)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--text)}
+.btn-danger{background:transparent;border:1px solid #442020;color:var(--red);padding:4px 8px;font-size:11px;border-radius:4px;cursor:pointer}
+.pencil-btn{background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:2px 4px;transition:color .2s}
+.pencil-btn:hover{color:var(--accent)}
+
+/* PERIOD TABS */
+.period-tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.period-tab{padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--text2);font-family:var(--font-mono);transition:all .2s}
+.period-tab.active,.period-tab:hover{border-color:var(--accent);color:var(--accent)}
+
+/* NEGOCIO CARDS */
+.neg-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:16px;cursor:pointer;transition:all .2s}
+.neg-card:hover{border-color:var(--accent)}
+
+/* ADD ROW BTN */
+.add-row-btn{background:transparent;border:1px dashed var(--border2);color:var(--text3);font-family:var(--font-mono);font-size:11px;padding:6px 14px;border-radius:4px;cursor:pointer;transition:all .2s;margin-top:8px}
+.add-row-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* DIVIDER */
+.divider{border:none;border-top:1px solid var(--border);margin:20px 0}
+.table-scroll{overflow-x:auto}
+
+@media(max-width:900px){
+  .grid-4{grid-template-columns:repeat(2,1fr)}
+  .grid-2-3{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .grid-4,.grid-2,.grid-2-3{grid-template-columns:1fr}
+  .topnav-links{overflow-x:auto}
+}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;right:28px;background:#1a1a1a;border:1px solid #d4a853;color:#d4a853;font-family:'DM Mono',monospace;font-size:12px;padding:10px 18px;border-radius:6px;opacity:0;transform:translateY(10px);transition:all .3s;z-index:9999;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+</style>
+</head>
+<body>
+<div id="toast" class="toast"></div>
+
+<!-- EDIT MODAL ACTIVOS -->
+<div class="edit-overlay" id="modalActivos">
+  <div class="edit-modal">
+    <h3>✏️ Editar Activos Físicos</h3>
+    <div id="activosEditList"></div>
+    <button class="btn btn-ghost" style="margin-top:8px;font-size:11px;width:100%" onclick="addActivoEditRow()">+ Agregar activo</button>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-gold" onclick="saveActivos()">Guardar</button>
+      <button class="btn btn-ghost" onclick="closeModal('modalActivos')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<nav class="topnav">
+  <div class="topnav-brand">
+    <img src="data:image/png;base64,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" alt="EC">
+    <span>FINANZAS</span>
+  </div>
+  <div class="topnav-links">
+    <a href="#" class="active" onclick="showPage('overview',this)">Resumen</a>
+    <a href="#" onclick="showPage('patrimonio',this)">Patrimonio</a>
+    <a href="#" onclick="showPage('inversiones',this)">Port. Inversiones</a>
+    <a href="#" onclick="showPage('ahorros',this)">Port. Ahorros</a>
+    <a href="#" onclick="showPage('negocios',this)">Negocios</a>
+    <a href="#" onclick="showPage('distribucion',this)">Distribución</a>
+  </div>
+</nav>
+
+<!-- ══════════════ PAGE: RESUMEN ══════════════ -->
+<div id="page-overview" class="page active">
+  <div class="page-title">Control Financiero</div>
+
+  <div class="grid-4">
+    <div class="card-sm">
+      <div class="stat-label">Patrimonio Total</div>
+      <div class="stat-val" id="ov-patrimonio">—</div>
+      <div style="font-size:11px;margin-top:4px"><span id="ov-patrimonio-diff" class="neutral">—</span></div>
+    </div>
+    <div class="card-sm">
+      <div class="stat-label">Capital</div>
+      <div class="stat-val" id="ov-capital">—</div>
+      <div style="font-size:11px;margin-top:4px"><span id="ov-capital-diff" class="neutral">—</span></div>
+    </div>
+    <div class="card-sm">
+      <div class="stat-label">Activos</div>
+      <div class="stat-val" id="ov-activos">—</div>
+      <div style="font-size:11px;margin-top:4px"><span id="ov-activos-diff" class="neutral">—</span></div>
+    </div>
+    <div class="card-sm">
+      <div class="stat-label">Port. Inversiones</div>
+      <div class="stat-val" id="ov-inversiones">—</div>
+      <div style="font-size:11px;margin-top:4px"><span id="ov-inversiones-diff" class="neutral">—</span></div>
+    </div>
+  </div>
+
+  <div class="grid-2-3">
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="sec-title">Crecimiento Patrimonial (MXN)</div>
+        <div class="chart-wrap" style="height:240px"><canvas id="chartPatrimonio"></canvas></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div class="sec-title" style="margin-bottom:0">Activos Físicos</div>
+          <button class="pencil-btn" onclick="openModal('modalActivos')">✏️</button>
+        </div>
+        <table class="fin-table">
+          <thead><tr><th>Activo</th><th>Categoría</th><th class="num">Valor MXN</th></tr></thead>
+          <tbody id="tbodyActivosOv"></tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="sec-title">Distribución</div>
+        <div class="chart-wrap" style="height:180px"><canvas id="chartDist"></canvas></div>
+        <div class="donut-legend" style="margin-top:10px">
+          <div class="legend-item"><div class="legend-dot" style="background:#e8e6df"></div><span>Gastos Básicos 45%</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#aaaaaa"></div><span>Inversión 30%</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#666666"></div><span>Ocio 15%</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#444444"></div><span>Ahorro 10%</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="sec-title">Portafolio Inversiones</div>
+        <div class="chart-wrap" style="height:160px"><canvas id="chartInvDonut"></canvas></div>
+        <div class="donut-legend" style="margin-top:10px" id="invDonutLegend"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ PAGE: PATRIMONIO ══════════════ -->
+<div id="page-patrimonio" class="page">
+  <div class="page-title">Patrimonio</div>
+  <div class="page-sub">Capital + Activos</div>
+
+  <div class="grid-4">
+    <div class="card-sm">
+      <div class="stat-label">Patrimonio</div>
+      <div class="stat-val" id="pat-total">—</div>
+      <div style="font-size:11px;margin-top:4px"><span id="pat-total-diff" class="neutral">—</span></div>
+    </div>
+    <div class="card-sm">
+      <div class="stat-label">Capital</div>
+      <div class="stat-val" id="pat-capital">—</div>
+      <div style="font-size:11px;margin-top:4px"><span id="pat-capital-diff" class="neutral">—</span></div>
+    </div>
+    <div class="card-sm">
+      <div class="stat-label">Activos</div>
+      <div class="stat-val" id="pat-activos">—</div>
+      <div style="font-size:11px;margin-top:4px"><span id="pat-activos-diff" class="neutral">—</span></div>
+    </div>
+    <div class="card-sm">
+      <div class="stat-label">Dif. Mes Anterior</div>
+      <div class="stat-val" id="pat-dif">—</div>
+      <div style="font-size:11px;margin-top:4px"><span id="pat-dif-pct" class="neutral">—</span></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="sec-title">Histórico (MXN)</div>
+    <div class="chart-wrap" style="height:280px"><canvas id="chartPatrimonioFull"></canvas></div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div class="sec-title" style="margin-bottom:0">Activos Físicos</div>
+      <button class="pencil-btn" onclick="openModal('modalActivos')">✏️</button>
+    </div>
+    <table class="fin-table">
+      <thead><tr><th>Activo</th><th>Categoría</th><th class="num">Valor MXN</th></tr></thead>
+      <tbody id="tbodyActivosPat"></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <button class="db-toggle" onclick="toggleDb('dbPatrimonio')">
+      <span>📊 Base de Datos</span><span id="dbPatrimonioArrow">▼</span>
+    </button>
+    <div class="db-body" id="dbPatrimonio">
+      <div class="table-scroll" style="margin-top:10px">
+        <table class="fin-table">
+          <thead><tr><th>Mes</th><th class="num">Capital MXN</th><th class="num">Activos MXN</th><th class="num">Patrimonio Total MXN</th><th class="num">Dif %</th></tr></thead>
+          <tbody id="tbodyPatrimonio"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ PAGE: PORT. INVERSIONES ══════════════ -->
+<div id="page-inversiones" class="page">
+  <div class="page-title">Portafolio de Inversiones</div>
+  <div class="page-sub" id="inv-subtitle">Total: — MXN</div>
+
+  <div class="grid-2" style="margin-bottom:16px">
+    <div class="card">
+      <div class="sec-title">Bolsa de Valores</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:4px">Balance: <span id="bolsa-bal" style="color:var(--text)">—</span> MXN &nbsp;·&nbsp; Real: <span id="bolsa-pct-real">—</span>% &nbsp;·&nbsp; Obj: 30%</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:10px">ETF's 40% · FIBRAS 40% · ACC 20% &nbsp;·&nbsp; <span class="tag tag-blue">GBM</span> <span class="tag tag-gold">PLATA</span></div>
+      <div class="chart-wrap" style="height:180px;margin-bottom:10px"><canvas id="chartBolsa"></canvas></div>
+      <button class="db-toggle" onclick="toggleDb('dbBolsa')"><span>📊 Base de Datos</span><span id="dbBolsaArrow">▼</span></button>
+      <div class="db-body" id="dbBolsa">
+        <div class="table-scroll" style="margin-top:8px">
+          <table class="fin-table">
+            <thead><tr><th>Fecha</th><th class="num">ETF's MXN</th><th class="num">FIBRAS MXN</th><th class="num">ACC MXN</th><th class="num">Total MXN</th><th class="num">Dif%</th></tr></thead>
+            <tbody id="tbodyBolsa"></tbody>
+          </table>
+        </div>
+        <button class="add-row-btn" onclick="addRowBolsa()">+ Agregar mes</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-title">Bonos Gubernamentales</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:4px">Balance: <span id="bonos-bal" style="color:var(--text)">—</span> MXN &nbsp;·&nbsp; Real: <span id="bonos-pct-real">—</span>% &nbsp;·&nbsp; Obj: 15%</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:10px">PPR 75% · Seguro 25% &nbsp;·&nbsp; <span class="tag tag-gold">PLATA</span></div>
+      <div class="chart-wrap" style="height:180px;margin-bottom:10px"><canvas id="chartBonos"></canvas></div>
+      <button class="db-toggle" onclick="toggleDb('dbBonos')"><span>📊 Base de Datos</span><span id="dbBonosArrow">▼</span></button>
+      <div class="db-body" id="dbBonos">
+        <div class="table-scroll" style="margin-top:8px">
+          <table class="fin-table">
+            <thead><tr><th>Fecha</th><th class="num">PPR MXN</th><th class="num">Seguro MXN</th><th class="num">Total MXN</th><th class="num">Dif%</th></tr></thead>
+            <tbody id="tbodyBonos"></tbody>
+          </table>
+        </div>
+        <button class="add-row-btn" onclick="addRowBonos()">+ Agregar mes</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:16px">
+    <div class="card">
+      <div class="sec-title">Fondo de Emergencia</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:4px">Balance: <span id="emerg-bal" style="color:var(--text)">—</span> MXN &nbsp;·&nbsp; Real: <span id="emerg-pct-real">—</span>% &nbsp;·&nbsp; Obj: 5%</div>
+      <div class="chart-wrap" style="height:180px;margin-bottom:10px"><canvas id="chartEmergencia"></canvas></div>
+      <button class="db-toggle" onclick="toggleDb('dbEmerg')"><span>📊 Base de Datos</span><span id="dbEmergArrow">▼</span></button>
+      <div class="db-body" id="dbEmerg">
+        <div class="table-scroll" style="margin-top:8px">
+          <table class="fin-table">
+            <thead><tr><th>Fecha</th><th class="num">Cantidad MXN</th><th class="num">Dif%</th></tr></thead>
+            <tbody id="tbodyEmergencia"></tbody>
+          </table>
+        </div>
+        <button class="add-row-btn" onclick="addRowEmerg()">+ Agregar mes</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-title">Criptomonedas — Bitso</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:4px">Balance: <span id="crypto-bal" style="color:var(--text)">—</span> MXN &nbsp;·&nbsp; Real: <span id="crypto-pct-real">—</span>% &nbsp;·&nbsp; Obj: 1.8%</div>
+      <div class="chart-wrap" style="height:180px;margin-bottom:10px"><canvas id="chartCrypto"></canvas></div>
+      <button class="db-toggle" onclick="toggleDb('dbCrypto')"><span>📊 Base de Datos</span><span id="dbCryptoArrow">▼</span></button>
+      <div class="db-body" id="dbCrypto">
+        <div class="table-scroll" style="margin-top:8px">
+          <table class="fin-table">
+            <thead><tr><th>Fecha</th><th class="num">BTC</th><th class="num">PEPE</th><th class="num">DOGE</th><th class="num">PAXG</th><th class="num">Total MXN</th></tr></thead>
+            <tbody id="tbodyCrypto"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="sec-title">Formación</div>
+      <div style="font-size:11px;color:var(--text2)">Balance: <span style="color:var(--text)">$5,000</span> MXN &nbsp;·&nbsp; Obj: 5% &nbsp;·&nbsp; <span class="tag tag-gold">PLATA</span></div>
+    </div>
+    <div class="card">
+      <div class="sec-title">Negocios</div>
+      <div style="font-size:11px;color:var(--text2)">Balance: <span id="neg-inv-bal" style="color:var(--text)">—</span> MXN &nbsp;·&nbsp; Real: <span id="neg-pct-real">—</span>% &nbsp;·&nbsp; Obj: 43.2%</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ PAGE: PORT. AHORROS ══════════════ -->
+<div id="page-ahorros" class="page">
+  <div class="page-title">Portafolio de Ahorros</div>
+  <div class="page-sub" id="ahorros-subtitle">Total: — MXN</div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="sec-title">Metas Largo Plazo</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:8px">Balance: <span id="largoP-bal" style="color:var(--text)">—</span> MXN &nbsp;·&nbsp; <span class="tag tag-gold">PLATA</span></div>
+      <div class="chart-wrap" style="height:200px;margin-bottom:10px"><canvas id="chartLargoP"></canvas></div>
+      <button class="db-toggle" onclick="toggleDb('dbLargoP')"><span>📊 Base de Datos</span><span id="dbLargoPArrow">▼</span></button>
+      <div class="db-body" id="dbLargoP">
+        <div class="table-scroll" style="margin-top:8px">
+          <table class="fin-table">
+            <thead><tr><th>Fecha</th><th>Mes</th><th class="num">Cantidad MXN</th><th class="num">Dif%</th></tr></thead>
+            <tbody id="tbodyLargoP"></tbody>
+          </table>
+        </div>
+        <button class="add-row-btn" onclick="addRowLargoP()">+ Agregar mes</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-title">Metas Corto Plazo</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:8px">Balance: <span id="cortoP-bal" style="color:var(--text)">—</span> MXN &nbsp;·&nbsp; <span class="tag tag-gold">PLATA</span></div>
+      <div class="chart-wrap" style="height:200px;margin-bottom:10px"><canvas id="chartCortoP"></canvas></div>
+      <button class="db-toggle" onclick="toggleDb('dbCortoP')"><span>📊 Base de Datos</span><span id="dbCortoPArrow">▼</span></button>
+      <div class="db-body" id="dbCortoP">
+        <div class="table-scroll" style="margin-top:8px">
+          <table class="fin-table">
+            <thead><tr><th>Fecha</th><th>Mes</th><th class="num">Cantidad MXN</th><th class="num">Dif%</th></tr></thead>
+            <tbody id="tbodyCortoP"></tbody>
+          </table>
+        </div>
+        <button class="add-row-btn" onclick="addRowCortoP()">+ Agregar mes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ PAGE: NEGOCIOS ══════════════ -->
+<div id="page-negocios" class="page">
+  <div class="page-title">Negocios</div>
+  <div class="page-sub" id="neg-subtitle">Balance actual: — MXN</div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="sec-title">Histórico (MXN)</div>
+    <div class="chart-wrap" style="height:240px"><canvas id="chartNegocios"></canvas></div>
+  </div>
+
+  <div class="grid-4" style="margin-bottom:16px">
+    <div class="neg-card" onclick="showToast('Blanco Toys — próximamente')">
+      <div class="stat-label">Blanco Toys</div>
+      <div style="font-size:17px;font-family:var(--font-display);font-weight:700;margin-top:6px" id="neg-bt">—</div>
+    </div>
+    <div class="neg-card" onclick="showToast('Bianco Wash — próximamente')">
+      <div class="stat-label">Bianco Wash</div>
+      <div style="font-size:17px;font-family:var(--font-display);font-weight:700;margin-top:6px" id="neg-bw">—</div>
+    </div>
+    <div class="neg-card" onclick="showToast('Grupo Kalen — próximamente')">
+      <div class="stat-label">Grupo Kalen</div>
+      <div style="font-size:17px;font-family:var(--font-display);font-weight:700;margin-top:6px" id="neg-gk">—</div>
+    </div>
+    <div class="neg-card" onclick="showToast('Ethos Club — próximamente')">
+      <div class="stat-label">Ethos Club</div>
+      <div style="font-size:17px;font-family:var(--font-display);font-weight:700;margin-top:6px" id="neg-et">—</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="sec-title">Profits por Negocio (MXN)</div>
+    <div class="chart-wrap" style="height:240px"><canvas id="chartProfits"></canvas></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="period-tabs" id="negPeriodTabs">
+        <button class="period-tab active" onclick="setNegPeriod('all',this)">Histórico</button>
+        <button class="period-tab" onclick="setNegPeriod('2026',this)">2026</button>
+        <button class="period-tab" onclick="setNegPeriod('2025',this)">2025</button>
+        <button class="period-tab" onclick="setNegPeriod('2024',this)">2024</button>
+      </div>
+      <div class="sec-title">Balance Mensual Negocios</div>
+      <div class="table-scroll">
+        <table class="fin-table">
+          <thead><tr><th>Fecha</th><th>Mes</th><th class="num">Total MXN</th><th class="num">Var%</th></tr></thead>
+          <tbody id="tbodyNegocios"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="period-tabs" id="profPeriodTabs">
+        <button class="period-tab active" onclick="setProfPeriod('all',this)">Histórico</button>
+        <button class="period-tab" onclick="setProfPeriod('2026',this)">2026</button>
+        <button class="period-tab" onclick="setProfPeriod('2025',this)">2025</button>
+        <button class="period-tab" onclick="setProfPeriod('2024',this)">2024</button>
+      </div>
+      <div class="sec-title">Profits por Empresa</div>
+      <div class="table-scroll">
+        <table class="fin-table">
+          <thead><tr><th>Fecha</th><th class="num">Blanco Toys</th><th class="num">Bianco Wash</th><th class="num">Grupo Kalen</th><th class="num">Ethos Club</th></tr></thead>
+          <tbody id="tbodyProfits"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ PAGE: DISTRIBUCIÓN ══════════════ -->
+<div id="page-distribucion" class="page">
+  <div class="page-title">Distribución de Ingresos</div>
+  <div class="page-sub">Modelo 45/30/15/10</div>
+
+  <div class="card" style="margin-bottom:20px">
+    <div class="sec-title">Calculadora de Distribución</div>
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap">
+      <label style="font-size:13px;color:var(--text2)">Ingreso mensual (MXN):</label>
+      <input type="number" id="ingresoMensual" value="30000" style="background:var(--bg4);border:1px solid var(--border2);color:var(--text);font-family:var(--font-mono);font-size:16px;padding:8px 14px;border-radius:6px;width:180px" oninput="calcDistribucion()">
+    </div>
+    <div class="grid-4" id="distCards"></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="sec-title">Distribución Visual</div>
+      <div style="display:flex;gap:20px;align-items:flex-start">
+        <div class="chart-wrap" style="height:220px;width:220px;flex-shrink:0"><canvas id="chartDistPage"></canvas></div>
+        <div class="donut-legend" style="margin-top:12px">
+          <div class="legend-item"><div class="legend-dot" style="background:#e8e6df"></div><span>Gastos Básicos — 45%</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#aaaaaa"></div><span>Inversión — 30%</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#666666"></div><span>Ocio — 15%</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#444444"></div><span>Ahorro — 10%</span></div>
+        </div>
+      </div>
+    </div>
+    <div></div>
+  </div>
+</div>
+
+<script>
+// ══ DATA ══
+let activosData=[
+  {nombre:'Brincolin 3x4 Mts',categoria:'Equipo',valor:9000},
+  {nombre:'Máquina Vending',categoria:'Equipo',valor:6000}
+];
+let patrimonioData=[
+  {mes:'MY26',capital:116520,activos:15000},{mes:'AB26',capital:97463,activos:15000},
+  {mes:'MZ26',capital:86813,activos:15000},{mes:'FE26',capital:79591,activos:15000},
+  {mes:'EN26',capital:90214,activos:6000},{mes:'DI25',capital:101500,activos:6000},
+  {mes:'NO25',capital:87703,activos:6000},{mes:'OC25',capital:87000,activos:6000},
+  {mes:'SE25',capital:84683,activos:6000},{mes:'AG25',capital:85110,activos:6000},
+  {mes:'JL25',capital:82971,activos:6000},{mes:'JN25',capital:79484,activos:6000},
+  {mes:'MY25',capital:76461,activos:6000},{mes:'AB25',capital:71000,activos:6000},
+  {mes:'MZ25',capital:63910,activos:6000},{mes:'FE25',capital:59615,activos:6000},
+  {mes:'EN25',capital:58039,activos:6000},{mes:'DI24',capital:55519,activos:6000},
+  {mes:'NO24',capital:50457,activos:6000},{mes:'OC24',capital:46925,activos:6000},
+  {mes:'SE24',capital:42047,activos:6000},{mes:'AG24',capital:39638,activos:6000},
+  {mes:'JL24',capital:35000,activos:6000},{mes:'JN24',capital:34000,activos:6000},
+  {mes:'MY24',capital:33600,activos:6000},{mes:'AB24',capital:32200,activos:6000},
+  {mes:'MZ24',capital:30800,activos:6000},{mes:'FE24',capital:29400,activos:6000},
+  {mes:'EN24',capital:28000,activos:6000},{mes:'DI23',capital:28000,activos:6000},
+  {mes:'NO23',capital:32000,activos:0},{mes:'OC23',capital:30000,activos:0},
+  {mes:'SE23',capital:28000,activos:0},{mes:'AG23',capital:25000,activos:0},
+  {mes:'JL23',capital:20000,activos:0},{mes:'JN23',capital:16000,activos:0},
+  {mes:'MY23',capital:12000,activos:0}
+];
+let bolsaData=[
+  {fecha:'31/05/2026',mes:'MY26',etfs:12000,fibras:12000,acc:6000},
+  {fecha:'30/04/2026',mes:'AB26',etfs:7715,fibras:7096,acc:4423},
+  {fecha:'31/03/2026',mes:'MZ26',etfs:7178,fibras:6842,acc:4415},
+  {fecha:'28/02/2026',mes:'FE26',etfs:7416,fibras:6829,acc:4411},
+  {fecha:'31/01/2026',mes:'EN26',etfs:7520,fibras:6801,acc:4358},
+  {fecha:'31/12/2025',mes:'DI25',etfs:7390,fibras:6682,acc:4213},
+  {fecha:'30/11/2025',mes:'NO25',etfs:7329,fibras:6626,acc:4081},
+  {fecha:'31/10/2025',mes:'OC25',etfs:7151,fibras:6654,acc:3970},
+  {fecha:'30/09/2025',mes:'SE25',etfs:6926,fibras:6570,acc:3720},
+  {fecha:'31/08/2025',mes:'AG25',etfs:6574,fibras:6453,acc:3680},
+  {fecha:'31/07/2025',mes:'JL25',etfs:6378,fibras:6369,acc:3517},
+  {fecha:'30/06/2025',mes:'JN25',etfs:6202,fibras:6386,acc:3304},
+  {fecha:'31/05/2025',mes:'MY25',etfs:5375,fibras:5754,acc:2891},
+  {fecha:'30/04/2025',mes:'AB25',etfs:5113,fibras:5376,acc:2801},
+  {fecha:'31/03/2025',mes:'MZ25',etfs:4587,fibras:4817,acc:2501},
+  {fecha:'28/02/2025',mes:'FE25',etfs:4546,fibras:4314,acc:2195},
+  {fecha:'31/01/2025',mes:'EN25',etfs:4541,fibras:3994,acc:2130},
+  {fecha:'31/12/2024',mes:'DI24',etfs:4382,fibras:3864,acc:3553},
+  {fecha:'30/11/2024',mes:'NO24',etfs:4895,fibras:4385,acc:2188},
+  {fecha:'31/10/2024',mes:'OC24',etfs:4523,fibras:4394,acc:2062},
+  {fecha:'31/07/2023',mes:'JL23',etfs:1400,fibras:1300,acc:1300}
+];
+let bonosData=[
+  {fecha:'31/05/2026',mes:'MY26',ppr:11250,seguro:3750},
+  {fecha:'30/04/2026',mes:'AB26',ppr:11424,seguro:4374},
+  {fecha:'31/03/2026',mes:'MZ26',ppr:9904,seguro:3792},
+  {fecha:'28/02/2026',mes:'FE26',ppr:9671,seguro:3703},
+  {fecha:'31/01/2026',mes:'EN26',ppr:9704,seguro:3716},
+  {fecha:'31/12/2025',mes:'DI25',ppr:13152,seguro:4500},
+  {fecha:'30/11/2025',mes:'NO25',ppr:13500,seguro:4500},
+  {fecha:'31/10/2025',mes:'OC25',ppr:13500,seguro:4420},
+  {fecha:'30/09/2025',mes:'SE25',ppr:13455,seguro:4420},
+  {fecha:'31/08/2025',mes:'AG25',ppr:13404,seguro:4420},
+  {fecha:'31/07/2025',mes:'JL25',ppr:13281,seguro:4420},
+  {fecha:'30/06/2025',mes:'JN25',ppr:13339,seguro:4478},
+  {fecha:'31/05/2025',mes:'MY25',ppr:12328,seguro:4150},
+  {fecha:'30/04/2025',mes:'AB25',ppr:12230,seguro:4104},
+  {fecha:'31/03/2025',mes:'MZ25',ppr:11674,seguro:3907},
+  {fecha:'28/02/2025',mes:'FE25',ppr:11053,seguro:3708},
+  {fecha:'31/01/2025',mes:'EN25',ppr:10758,seguro:3669},
+  {fecha:'31/12/2024',mes:'DI24',ppr:10193,seguro:3415},
+  {fecha:'31/07/2023',mes:'JL23',ppr:2200,seguro:300}
+];
+let emergenciaData=[
+  {fecha:'31/05/2026',mes:'MY26',cantidad:5000},{fecha:'30/04/2026',mes:'AB26',cantidad:10145},
+  {fecha:'31/03/2026',mes:'MZ26',cantidad:8796},{fecha:'28/02/2026',mes:'FE26',cantidad:8588},
+  {fecha:'31/01/2026',mes:'EN26',cantidad:8618},{fecha:'31/12/2025',mes:'DI25',cantidad:10500},
+  {fecha:'30/11/2025',mes:'NO25',cantidad:10500},{fecha:'31/10/2025',mes:'OC25',cantidad:10450},
+  {fecha:'30/09/2025',mes:'SE25',cantidad:10420},{fecha:'31/08/2025',mes:'AG25',cantidad:10420},
+  {fecha:'31/07/2025',mes:'JL25',cantidad:10415},{fecha:'30/06/2025',mes:'JN25',cantidad:10491},
+  {fecha:'31/05/2025',mes:'MY25',cantidad:10171},{fecha:'30/04/2025',mes:'AB25',cantidad:10056},
+  {fecha:'31/03/2025',mes:'MZ25',cantidad:9591},{fecha:'28/02/2025',mes:'FE25',cantidad:8708},
+  {fecha:'31/01/2025',mes:'EN25',cantidad:8412},{fecha:'31/12/2024',mes:'DI24',cantidad:7761},
+  {fecha:'30/11/2024',mes:'NO24',cantidad:7518},{fecha:'31/10/2024',mes:'OC24',cantidad:7097},
+  {fecha:'31/07/2023',mes:'JL23',cantidad:1000}
+];
+let cryptoData=[
+  {fecha:'31/05/2026',mes:'MY26',btc:1088,pepe:259,doge:175,paxg:284},
+  {fecha:'30/04/2026',mes:'AB26',btc:1163,pepe:304,doge:189,paxg:291},
+  {fecha:'31/03/2026',mes:'MZ26',btc:1015,pepe:263,doge:162,paxg:300},
+  {fecha:'28/02/2026',mes:'FE26',btc:1019,pepe:273,doge:165,paxg:333},
+  {fecha:'31/01/2026',mes:'EN26',btc:1108,pepe:317,doge:183,paxg:309},
+  {fecha:'31/12/2025',mes:'DI25',btc:1341,pepe:316,doge:210,paxg:282},
+  {fecha:'30/11/2025',mes:'NO25',btc:1385,pepe:350,doge:254,paxg:277},
+  {fecha:'31/10/2025',mes:'OC25',btc:1724,pepe:527,doge:342,paxg:269},
+  {fecha:'30/09/2025',mes:'SE25',btc:1783,pepe:748,doge:426,paxg:256},
+  {fecha:'31/08/2025',mes:'AG25',btc:1706,pepe:768,doge:389,paxg:237},
+  {fecha:'31/07/2025',mes:'JL25',btc:1882,pepe:938,doge:415,paxg:225},
+  {fecha:'30/06/2025',mes:'JN25',btc:1781,pepe:782,doge:304,paxg:226},
+  {fecha:'31/05/2025',mes:'MY25',btc:1443,pepe:1001,doge:373,paxg:234},
+  {fecha:'30/04/2025',mes:'AB25',btc:1302,pepe:765,doge:338,paxg:242},
+  {fecha:'31/03/2025',mes:'MZ25',btc:1208,pepe:570,doge:149,paxg:231},
+  {fecha:'28/02/2025',mes:'FE25',btc:1149,pepe:397,doge:184,paxg:214},
+  {fecha:'31/01/2025',mes:'EN25',btc:1389,pepe:494,doge:289,paxg:212}
+];
+let negociosData=[
+  {fecha:'31/05/2026',mes:'MY26',total:43200},{fecha:'30/04/2026',mes:'AB26',total:27340},
+  {fecha:'31/03/2026',mes:'MZ26',total:24204},{fecha:'28/02/2026',mes:'FE26',total:23663},
+  {fecha:'31/01/2026',mes:'EN26',total:34045},{fecha:'31/12/2025',mes:'DI25',total:34414},
+  {fecha:'30/11/2025',mes:'NO25',total:20500},{fecha:'31/10/2025',mes:'OC25',total:19673},
+  {fecha:'30/09/2025',mes:'SE25',total:18039},{fecha:'24/08/2025',mes:'AG25',total:16856},
+  {fecha:'31/07/2025',mes:'JL25',total:12550},{fecha:'30/06/2025',mes:'JN25',total:11074},
+  {fecha:'31/05/2025',mes:'MY25',total:8368},{fecha:'30/04/2025',mes:'AB25',total:9820},
+  {fecha:'31/03/2025',mes:'MZ25',total:9147},{fecha:'28/02/2025',mes:'FE25',total:7911},
+  {fecha:'31/01/2025',mes:'EN25',total:6589},{fecha:'31/12/2024',mes:'DI24',total:6684},
+  {fecha:'30/11/2024',mes:'NO24',total:6770},{fecha:'31/10/2024',mes:'OC24',total:5683},
+  {fecha:'30/09/2024',mes:'SE24',total:4992},{fecha:'31/08/2024',mes:'AG24',total:4400},
+  {fecha:'31/07/2024',mes:'JL24',total:4250},{fecha:'30/06/2024',mes:'JN24',total:3670},
+  {fecha:'31/05/2024',mes:'MY24',total:2434},{fecha:'30/04/2024',mes:'AB24',total:1337},
+  {fecha:'31/05/2023',mes:'MY23',total:6000}
+];
+let profitsData=[
+  {fecha:'30/04/2026',mes:'AB26',blancoToys:120,blancoWash:2225,grupoKalen:0,ethos:7.37},
+  {fecha:'31/03/2026',mes:'MZ26',blancoToys:370,blancoWash:5970,grupoKalen:0,ethos:9.34},
+  {fecha:'28/02/2026',mes:'FE26',blancoToys:0,blancoWash:5365,grupoKalen:0,ethos:37},
+  {fecha:'31/01/2026',mes:'EN26',blancoToys:0,blancoWash:1890,grupoKalen:6300,ethos:13},
+  {fecha:'31/12/2025',mes:'DI25',blancoToys:400,blancoWash:400,grupoKalen:8000,ethos:13},
+  {fecha:'30/11/2025',mes:'NO25',blancoToys:600,blancoWash:5710,grupoKalen:0,ethos:137},
+  {fecha:'31/10/2025',mes:'OC25',blancoToys:-125,blancoWash:6520,grupoKalen:0,ethos:1428},
+  {fecha:'30/09/2025',mes:'SE25',blancoToys:510,blancoWash:418,grupoKalen:0,ethos:46},
+  {fecha:'31/08/2025',mes:'AG25',blancoToys:3700,blancoWash:1398,grupoKalen:0,ethos:0},
+  {fecha:'31/07/2025',mes:'JL25',blancoToys:650,blancoWash:0,grupoKalen:6000,ethos:0},
+  {fecha:'30/06/2025',mes:'JN25',blancoToys:660,blancoWash:0,grupoKalen:8600,ethos:0},
+  {fecha:'31/05/2025',mes:'MY25',blancoToys:410,blancoWash:320,grupoKalen:0,ethos:0},
+  {fecha:'30/04/2025',mes:'AB25',blancoToys:1570,blancoWash:1105,grupoKalen:0,ethos:0},
+  {fecha:'31/03/2025',mes:'MZ25',blancoToys:420,blancoWash:955,grupoKalen:0,ethos:0},
+  {fecha:'28/02/2025',mes:'FE25',blancoToys:150,blancoWash:0,grupoKalen:0,ethos:0},
+  {fecha:'31/01/2025',mes:'EN25',blancoToys:40,blancoWash:0,grupoKalen:0,ethos:0},
+  {fecha:'31/12/2024',mes:'DI24',blancoToys:380,blancoWash:0,grupoKalen:0,ethos:0},
+  {fecha:'30/11/2024',mes:'NO24',blancoToys:870,blancoWash:0,grupoKalen:2500,ethos:0},
+  {fecha:'31/10/2024',mes:'OC24',blancoToys:250,blancoWash:0,grupoKalen:4800,ethos:0}
+];
+let largoPlazoData=[
+  {fecha:'31/05/2026',mes:'MY26',cantidad:14520},{fecha:'30/04/2026',mes:'AB26',cantidad:18793},
+  {fecha:'31/03/2026',mes:'MZ26',cantidad:16294},{fecha:'28/02/2026',mes:'FE26',cantidad:15910},
+  {fecha:'31/01/2026',mes:'EN26',cantidad:15964},{fecha:'31/12/2025',mes:'DI25',cantidad:20000},
+  {fecha:'30/11/2025',mes:'NO25',cantidad:20000},{fecha:'31/10/2025',mes:'OC25',cantidad:20000},
+  {fecha:'30/09/2025',mes:'SE25',cantidad:19600},{fecha:'31/08/2025',mes:'AG25',cantidad:21820},
+  {fecha:'31/07/2025',mes:'JL25',cantidad:24321},{fecha:'30/06/2025',mes:'JN25',cantidad:24320},
+  {fecha:'31/05/2025',mes:'MY25',cantidad:23371},{fecha:'30/04/2025',mes:'AB25',cantidad:23047},
+  {fecha:'31/03/2025',mes:'MZ25',cantidad:22098},{fecha:'28/02/2025',mes:'FE25',cantidad:21228},
+  {fecha:'31/01/2025',mes:'EN25',cantidad:20778},{fecha:'31/12/2024',mes:'DI24',cantidad:20056},
+  {fecha:'31/08/2024',mes:'AG24',cantidad:12540}
+];
+let cortoPlazoData=[
+  {fecha:'31/05/2026',mes:'MY26',cantidad:2000},{fecha:'30/04/2026',mes:'AB26',cantidad:3062},
+  {fecha:'31/03/2026',mes:'MZ26',cantidad:2654},{fecha:'28/02/2026',mes:'FE26',cantidad:2592},
+  {fecha:'31/01/2026',mes:'EN26',cantidad:2600},{fecha:'31/12/2025',mes:'DI25',cantidad:3200},
+  {fecha:'30/11/2025',mes:'NO25',cantidad:3200},{fecha:'31/10/2025',mes:'OC25',cantidad:3120},
+  {fecha:'30/09/2025',mes:'SE25',cantidad:3120},{fecha:'31/08/2025',mes:'AG25',cantidad:3120},
+  {fecha:'31/07/2025',mes:'JL25',cantidad:3120},{fecha:'30/06/2025',mes:'JN25',cantidad:2720},
+  {fecha:'31/05/2025',mes:'MY25',cantidad:1000},{fecha:'30/04/2025',mes:'AB25',cantidad:1700},
+  {fecha:'31/03/2025',mes:'MZ25',cantidad:420},{fecha:'28/02/2025',mes:'FE25',cantidad:7},
+  {fecha:'31/01/2025',mes:'EN25',cantidad:1611},{fecha:'31/12/2024',mes:'DI24',cantidad:1611},
+  {fecha:'31/08/2024',mes:'AG24',cantidad:300}
+];
+
+let negPeriod='all',profPeriod='all';
+
+// ══ HELPERS ══
+const fmt=v=>'$'+Math.round(v).toLocaleString('es-MX');
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+const pct=(a,b)=>b?Math.round(((a-b)/b)*100):0;
+function pctBadge(v){
+  if(v===null||v===undefined)return'<span class="pct-badge pct-neu">—</span>';
+  if(v>0)return`<span class="pct-badge pct-pos">+${v}%</span>`;
+  if(v<0)return`<span class="pct-badge pct-neg">${v}%</span>`;
+  return'<span class="pct-badge pct-neu">0%</span>';
+}
+function setEl(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+function setDiff(id,v){
+  const e=document.getElementById(id);if(!e)return;
+  e.className=v>0?'up':v<0?'down':'neutral';
+  e.textContent=v!==null?(v>0?'+':'')+v+'%':'—';
+}
+
+// ══ TOTALS ══
+function getTotalActivos(){return activosData.reduce((s,a)=>s+a.valor,0);}
+function getTotalBolsa(i){const r=bolsaData[i];return r?r.etfs+r.fibras+r.acc:0;}
+function getTotalBonos(i){const r=bonosData[i];return r?r.ppr+r.seguro:0;}
+function getTotalCrypto(i){const r=cryptoData[i];return r?r.btc+r.pepe+r.doge+r.paxg:0;}
+function getTotalInversiones(){
+  return getTotalBolsa(0)+getTotalBonos(0)+(emergenciaData[0]?.cantidad||0)+getTotalCrypto(0)+5000+(negociosData[0]?.total||0);
+}
+function getTotalAhorros(){return(largoPlazoData[0]?.cantidad||0)+(cortoPlazoData[0]?.cantidad||0);}
+
+// ══ CHARTS ══
+const chartInstances={};
+function mkChart(id,type,labels,datasets,extra){
+  if(chartInstances[id])chartInstances[id].destroy();
+  const ctx=document.getElementById(id);if(!ctx)return;
+  chartInstances[id]=new Chart(ctx,{type,data:{labels,datasets},options:Object.assign({
+    responsive:true,maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{
+      legend:{display:datasets.length>1,labels:{color:'#888880',font:{size:10,family:'DM Mono'}}},
+      tooltip:{backgroundColor:'#1a1a1a',borderColor:'#2a2a2a',borderWidth:1,
+        titleColor:'#888880',bodyColor:'#e8e6df',
+        callbacks:{label:c=>' '+c.dataset.label+': $'+Math.round(c.raw).toLocaleString('es-MX')+' MXN'}}
+    },
+    scales:{
+      x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#555550',font:{size:10,family:'DM Mono'}}},
+      y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#555550',font:{size:10,family:'DM Mono'},callback:v=>'$'+Math.round(v/1000)+'k'}}
+    }
+  },extra||{})});
+}
+function mkDonut(id,labels,data,colors){
+  if(chartInstances[id])chartInstances[id].destroy();
+  const ctx=document.getElementById(id);if(!ctx)return;
+  const total=data.reduce((a,b)=>a+b,0);
+  chartInstances[id]=new Chart(ctx,{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:0,borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false},
+      tooltip:{backgroundColor:'#1a1a1a',borderColor:'#2a2a2a',borderWidth:1,titleColor:'#888880',bodyColor:'#e8e6df',
+        callbacks:{label:c=>' '+c.label+': $'+Math.round(c.raw).toLocaleString('es-MX')+' MXN ('+((c.raw/total)*100).toFixed(1)+'%)'}}
+    }}});
+}
+
+function buildCharts(){
+  // Overview patrimonio
+  const pS=[...patrimonioData].reverse().slice(-20);
+  mkChart('chartPatrimonio','line',pS.map(r=>r.mes),[{label:'Patrimonio',data:pS.map(r=>r.capital+r.activos),borderColor:'#fff',backgroundColor:'rgba(255,255,255,0.05)',tension:0,pointRadius:0,borderWidth:2,fill:true}]);
+  // Dist donuts (fixed)
+  mkDonut('chartDist',['Gastos Básicos','Inversión','Ocio','Ahorro'],[45,30,15,10],['#e8e6df','#aaaaaa','#666666','#444444']);
+  mkDonut('chartDistPage',['Gastos Básicos','Inversión','Ocio','Ahorro'],[45,30,15,10],['#e8e6df','#aaaaaa','#666666','#444444']);
+  // Inv donut (real values)
+  const bT=getTotalBolsa(0),boT=getTotalBonos(0),emT=emergenciaData[0]?.cantidad||0,crT=getTotalCrypto(0),ngT=negociosData[0]?.total||0;
+  const iL=['Negocios','Bolsa','Bonos','Emergencia','Formación','Crypto'],iV=[ngT,bT,boT,emT,5000,crT],iC=['#ffffff','#cccccc','#999999','#777777','#555555','#333333'];
+  mkDonut('chartInvDonut',iL,iV,iC);
+  const leg=document.getElementById('invDonutLegend');
+  if(leg)leg.innerHTML=iL.map((l,i)=>`<div class="legend-item"><div class="legend-dot" style="background:${iC[i]}"></div><span>${l}: ${fmt(iV[i])} MXN</span></div>`).join('');
+  // Patrimonio full
+  const pA=[...patrimonioData].reverse();
+  mkChart('chartPatrimonioFull','line',pA.map(r=>r.mes),[{label:'Patrimonio',data:pA.map(r=>r.capital+r.activos),borderColor:'#fff',backgroundColor:'rgba(255,255,255,0.05)',tension:0,pointRadius:0,borderWidth:2,fill:true}]);
+  // Bolsa
+  const bR=[...bolsaData].reverse();
+  mkChart('chartBolsa','line',bR.map(r=>r.mes),[
+    {label:"ETF's",data:bR.map(r=>r.etfs),borderColor:'#fff',tension:0,pointRadius:0,borderWidth:2},
+    {label:'FIBRAS',data:bR.map(r=>r.fibras),borderColor:'#aaa',tension:0,pointRadius:0,borderWidth:2},
+    {label:'ACC',data:bR.map(r=>r.acc),borderColor:'#666',tension:0,pointRadius:0,borderWidth:2}
+  ]);
+  // Bonos
+  const boR=[...bonosData].reverse();
+  mkChart('chartBonos','line',boR.map(r=>r.mes),[
+    {label:'PPR',data:boR.map(r=>r.ppr),borderColor:'#fff',tension:0,pointRadius:0,borderWidth:2},
+    {label:'Seguro',data:boR.map(r=>r.seguro),borderColor:'#888',tension:0,pointRadius:0,borderWidth:2}
+  ]);
+  // Emergencia
+  const emR=[...emergenciaData].reverse();
+  mkChart('chartEmergencia','line',emR.map(r=>r.mes),[{label:'Fondo',data:emR.map(r=>r.cantidad),borderColor:'#fff',backgroundColor:'rgba(255,255,255,0.05)',tension:0,pointRadius:0,borderWidth:2,fill:true}]);
+  // Crypto
+  const crR=[...cryptoData].reverse();
+  mkChart('chartCrypto','line',crR.map(r=>r.mes),[
+    {label:'BTC',data:crR.map(r=>r.btc),borderColor:'#fff',tension:0,pointRadius:2,borderWidth:2},
+    {label:'PEPE',data:crR.map(r=>r.pepe),borderColor:'#aaa',tension:0,pointRadius:2,borderWidth:2},
+    {label:'DOGE',data:crR.map(r=>r.doge),borderColor:'#777',tension:0,pointRadius:2,borderWidth:2},
+    {label:'PAXG',data:crR.map(r=>r.paxg),borderColor:'#444',tension:0,pointRadius:2,borderWidth:2}
+  ]);
+  // Negocios
+  const nR=[...negociosData].reverse();
+  mkChart('chartNegocios','line',nR.map(r=>r.mes),[{label:'Negocios',data:nR.map(r=>r.total),borderColor:'#fff',backgroundColor:'rgba(255,255,255,0.05)',tension:0,pointRadius:0,borderWidth:2,fill:true}]);
+  // Profits (line)
+  const pF=profPeriod==='all'?profitsData:profitsData.filter(r=>r.fecha.includes(profPeriod));
+  const pR=[...pF].reverse();
+  mkChart('chartProfits','line',pR.map(r=>r.mes),[
+    {label:'Blanco Toys',data:pR.map(r=>r.blancoToys||0),borderColor:'#fff',tension:0,pointRadius:2,borderWidth:2},
+    {label:'Bianco Wash',data:pR.map(r=>r.blancoWash||0),borderColor:'#aaa',tension:0,pointRadius:2,borderWidth:2},
+    {label:'Grupo Kalen',data:pR.map(r=>r.grupoKalen||0),borderColor:'#777',tension:0,pointRadius:2,borderWidth:2},
+    {label:'Ethos Club',data:pR.map(r=>r.ethos||0),borderColor:'#555',tension:0,pointRadius:2,borderWidth:2}
+  ]);
+  // Ahorros
+  const lR=[...largoPlazoData].reverse();
+  mkChart('chartLargoP','line',lR.map(r=>r.mes),[{label:'Largo Plazo',data:lR.map(r=>r.cantidad),borderColor:'#fff',backgroundColor:'rgba(255,255,255,0.05)',tension:0,pointRadius:0,borderWidth:2,fill:true}]);
+  const cR=[...cortoPlazoData].reverse();
+  mkChart('chartCortoP','line',cR.map(r=>r.mes),[{label:'Corto Plazo',data:cR.map(r=>r.cantidad),borderColor:'#aaa',backgroundColor:'rgba(255,255,255,0.03)',tension:0,pointRadius:0,borderWidth:2,fill:true}]);
+}
+
+// ══ KPIs ══
+function updateKPIs(){
+  const totalActivos=getTotalActivos();
+  const totalInv=getTotalInversiones();
+  const totalAh=getTotalAhorros();
+  const capital=totalInv+totalAh;
+  const patrimonio=capital+totalActivos;
+  const p0=patrimonioData[0],p1=patrimonioData[1];
+  const pat0=p0?p0.capital+p0.activos:0,pat1=p1?p1.capital+p1.activos:0;
+  const difAbs=Math.round(pat0-pat1);
+  const difPct=pct(pat0,pat1);
+  const capDiff=pct(capital,p1?p1.capital:capital);
+  const acDiff=pct(totalActivos,p1?p1.activos:totalActivos);
+  // overview
+  setEl('ov-patrimonio',fmt(patrimonio)+' MXN');setDiff('ov-patrimonio-diff',difPct);
+  setEl('ov-capital',fmt(capital)+' MXN');setDiff('ov-capital-diff',capDiff);
+  setEl('ov-activos',fmt(totalActivos)+' MXN');setDiff('ov-activos-diff',acDiff);
+  setEl('ov-inversiones',fmt(totalInv)+' MXN');setDiff('ov-inversiones-diff',pct(totalInv,getTotalBolsa(1)+getTotalBonos(1)+(emergenciaData[1]?.cantidad||0)+getTotalCrypto(1)+5000+(negociosData[1]?.total||0)));
+  // patrimonio page
+  setEl('pat-total',fmt(patrimonio)+' MXN');setDiff('pat-total-diff',difPct);
+  setEl('pat-capital',fmt(capital)+' MXN');setDiff('pat-capital-diff',capDiff);
+  setEl('pat-activos',fmt(totalActivos)+' MXN');setDiff('pat-activos-diff',acDiff);
+  setEl('pat-dif',(difAbs>=0?'+':'')+fmt(difAbs)+' MXN');setDiff('pat-dif-pct',difPct);
+  // inv page
+  const eInv=document.getElementById('inv-subtitle');if(eInv)eInv.textContent='Total: '+fmt(totalInv)+' MXN';
+  setEl('bolsa-bal',fmt(getTotalBolsa(0)));setEl('bolsa-pct-real',(getTotalBolsa(0)/totalInv*100).toFixed(1));
+  setEl('bonos-bal',fmt(getTotalBonos(0)));setEl('bonos-pct-real',(getTotalBonos(0)/totalInv*100).toFixed(1));
+  setEl('emerg-bal',fmt(emergenciaData[0]?.cantidad||0));setEl('emerg-pct-real',((emergenciaData[0]?.cantidad||0)/totalInv*100).toFixed(1));
+  setEl('crypto-bal',fmt(getTotalCrypto(0)));setEl('crypto-pct-real',(getTotalCrypto(0)/totalInv*100).toFixed(1));
+  setEl('neg-inv-bal',fmt(negociosData[0]?.total||0));setEl('neg-pct-real',((negociosData[0]?.total||0)/totalInv*100).toFixed(1));
+  // ahorros page
+  const eAh=document.getElementById('ahorros-subtitle');if(eAh)eAh.textContent='Total: '+fmt(totalAh)+' MXN';
+  setEl('largoP-bal',fmt(largoPlazoData[0]?.cantidad||0));setEl('cortoP-bal',fmt(cortoPlazoData[0]?.cantidad||0));
+  // negocios
+  const eNeg=document.getElementById('neg-subtitle');if(eNeg)eNeg.textContent='Balance actual: '+fmt(negociosData[0]?.total||0)+' MXN';
+  const lp=profitsData[0]||{};
+  setEl('neg-bt',fmt(lp.blancoToys||0)+' MXN');setEl('neg-bw',fmt(lp.blancoWash||0)+' MXN');
+  setEl('neg-gk',fmt(lp.grupoKalen||0)+' MXN');setEl('neg-et',fmt(lp.ethos||0)+' MXN');
+}
+
+// ══ TABLES ══
+function buildActivosTable(){
+  const total=getTotalActivos();
+  const html=activosData.map(a=>`<tr><td>${a.nombre}</td><td><span class="tag tag-gold">${a.categoria}</span></td><td class="num">${fmt(a.valor)} MXN</td></tr>`).join('')
+    +`<tr><td style="color:var(--text2)">Total</td><td></td><td class="num" style="font-weight:600;color:var(--text)">${fmt(total)} MXN</td></tr>`;
+  ['tbodyActivosOv','tbodyActivosPat'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML=html;});
+}
+function buildPatrimonioTable(){
+  const tb=document.getElementById('tbodyPatrimonio');if(!tb)return;
+  tb.innerHTML=patrimonioData.map((r,i)=>{
+    const prev=patrimonioData[i+1],pat=r.capital+r.activos,vp=prev?pct(pat,prev.capital+prev.activos):null;
+    return`<tr><td><strong>${r.mes}</strong></td>
+      <td class="num"><input type="number" value="${r.capital}" oninput="updatePatrimonio(${i},this,'capital')"></td>
+      <td class="num"><input type="number" value="${r.activos}" oninput="updatePatrimonio(${i},this,'activos')"></td>
+      <td class="num" id="pat-row-${i}">${fmt(pat)} MXN</td>
+      <td class="num">${pctBadge(vp)}</td></tr>`;
+  }).join('');
+}
+function buildBolsaTable(){
+  const tb=document.getElementById('tbodyBolsa');if(!tb)return;
+  tb.innerHTML=bolsaData.map((r,i)=>{
+    const t=r.etfs+r.fibras+r.acc,prev=bolsaData[i+1],vp=prev?pct(t,prev.etfs+prev.fibras+prev.acc):null;
+    return`<tr><td>${r.fecha}</td>
+      <td class="num"><input type="number" value="${r.etfs}" oninput="updateBolsa(${i},this,'etfs')"></td>
+      <td class="num"><input type="number" value="${r.fibras}" oninput="updateBolsa(${i},this,'fibras')"></td>
+      <td class="num"><input type="number" value="${r.acc}" oninput="updateBolsa(${i},this,'acc')"></td>
+      <td class="num" id="bt-${i}">${fmt(t)} MXN</td>
+      <td class="num">${pctBadge(vp)}</td></tr>`;
+  }).join('');
+}
+function buildBonosTable(){
+  const tb=document.getElementById('tbodyBonos');if(!tb)return;
+  tb.innerHTML=bonosData.map((r,i)=>{
+    const t=r.ppr+r.seguro,prev=bonosData[i+1],vp=prev?pct(t,prev.ppr+prev.seguro):null;
+    return`<tr><td>${r.fecha}</td>
+      <td class="num"><input type="number" value="${r.ppr}" oninput="updateBonos(${i},this,'ppr')"></td>
+      <td class="num"><input type="number" value="${r.seguro}" oninput="updateBonos(${i},this,'seguro')"></td>
+      <td class="num" id="bo-${i}">${fmt(t)} MXN</td>
+      <td class="num">${pctBadge(vp)}</td></tr>`;
+  }).join('');
+}
+function buildEmergenciaTable(){
+  const tb=document.getElementById('tbodyEmergencia');if(!tb)return;
+  tb.innerHTML=emergenciaData.map((r,i)=>{
+    const prev=emergenciaData[i+1],vp=prev?pct(r.cantidad,prev.cantidad):null;
+    return`<tr><td>${r.fecha}</td><td class="num"><input type="number" value="${r.cantidad}" oninput="updateEmergencia(${i},this)"></td><td class="num">${pctBadge(vp)}</td></tr>`;
+  }).join('');
+}
+function buildCryptoTable(){
+  const tb=document.getElementById('tbodyCrypto');if(!tb)return;
+  tb.innerHTML=cryptoData.map(r=>{
+    const t=r.btc+r.pepe+r.doge+r.paxg;
+    return`<tr><td>${r.fecha}</td><td class="num">${fmt(r.btc)}</td><td class="num">${fmt(r.pepe)}</td><td class="num">${fmt(r.doge)}</td><td class="num">${fmt(r.paxg)}</td><td class="num">${fmt(t)} MXN</td></tr>`;
+  }).join('');
+}
+function buildNegociosTable(){
+  const tb=document.getElementById('tbodyNegocios');if(!tb)return;
+  const f=negPeriod==='all'?negociosData:negociosData.filter(r=>r.fecha.includes(negPeriod));
+  tb.innerHTML=f.map((r,i)=>{const prev=f[i+1],vp=prev?pct(r.total,prev.total):null;
+    return`<tr><td>${r.fecha}</td><td>${r.mes}</td><td class="num">${fmt(r.total)} MXN</td><td class="num">${pctBadge(vp)}</td></tr>`;
+  }).join('');
+}
+function buildProfitsTable(){
+  const tb=document.getElementById('tbodyProfits');if(!tb)return;
+  const f=profPeriod==='all'?profitsData:profitsData.filter(r=>r.fecha.includes(profPeriod));
+  tb.innerHTML=f.map(r=>`<tr><td>${r.fecha}</td><td class="num">${r.blancoToys?fmt(r.blancoToys):'—'}</td><td class="num">${r.blancoWash?fmt(r.blancoWash):'—'}</td><td class="num">${r.grupoKalen?fmt(r.grupoKalen):'—'}</td><td class="num">${r.ethos?fmt(r.ethos):'—'}</td></tr>`).join('');
+}
+function buildAhorrosTable(){
+  const tL=document.getElementById('tbodyLargoP');
+  if(tL)tL.innerHTML=largoPlazoData.map((r,i)=>{const prev=largoPlazoData[i+1],vp=prev?pct(r.cantidad,prev.cantidad):null;
+    return`<tr><td>${r.fecha}</td><td>${r.mes}</td><td class="num"><input type="number" value="${r.cantidad}" oninput="updateLargoP(${i},this)"></td><td class="num">${pctBadge(vp)}</td></tr>`;
+  }).join('');
+  const tC=document.getElementById('tbodyCortoP');
+  if(tC)tC.innerHTML=cortoPlazoData.map((r,i)=>{const prev=cortoPlazoData[i+1],vp=prev?pct(r.cantidad,prev.cantidad):null;
+    return`<tr><td>${r.fecha}</td><td>${r.mes}</td><td class="num"><input type="number" value="${r.cantidad}" oninput="updateCortoP(${i},this)"></td><td class="num">${pctBadge(vp)}</td></tr>`;
+  }).join('');
+}
+
+// ══ EDIT HANDLERS ══
+function save(key,data){if(window.fbSave){window.fbSave(key,data);showToast('Guardado ✔');}}
+function updatePatrimonio(i,el,field){
+  patrimonioData[i][field]=parseFloat(el.value)||0;
+  const t=document.getElementById('pat-row-'+i);if(t)t.textContent=fmt(patrimonioData[i].capital+patrimonioData[i].activos)+' MXN';
+  buildCharts();updateKPIs();save('patrimonio',patrimonioData);
+}
+function updateBolsa(i,el,field){
+  bolsaData[i][field]=parseFloat(el.value)||0;
+  const t=document.getElementById('bt-'+i);if(t)t.textContent=fmt(bolsaData[i].etfs+bolsaData[i].fibras+bolsaData[i].acc)+' MXN';
+  buildCharts();updateKPIs();save('bolsa',bolsaData);
+}
+function updateBonos(i,el,field){
+  bonosData[i][field]=parseFloat(el.value)||0;
+  const t=document.getElementById('bo-'+i);if(t)t.textContent=fmt(bonosData[i].ppr+bonosData[i].seguro)+' MXN';
+  buildCharts();updateKPIs();save('bonos',bonosData);
+}
+function updateEmergencia(i,el){emergenciaData[i].cantidad=parseFloat(el.value)||0;buildCharts();updateKPIs();save('emergencia',emergenciaData);}
+function updateLargoP(i,el){largoPlazoData[i].cantidad=parseFloat(el.value)||0;buildCharts();updateKPIs();save('largoP',largoPlazoData);}
+function updateCortoP(i,el){cortoPlazoData[i].cantidad=parseFloat(el.value)||0;buildCharts();updateKPIs();save('cortoP',cortoPlazoData);}
+
+// ══ ADD ROWS ══
+function addRowBolsa(){bolsaData.unshift({fecha:'',mes:'NUEVO',etfs:0,fibras:0,acc:0});buildBolsaTable();save('bolsa',bolsaData);}
+function addRowBonos(){bonosData.unshift({fecha:'',mes:'NUEVO',ppr:0,seguro:0});buildBonosTable();save('bonos',bonosData);}
+function addRowEmerg(){emergenciaData.unshift({fecha:'',mes:'NUEVO',cantidad:0});buildEmergenciaTable();save('emergencia',emergenciaData);}
+function addRowLargoP(){largoPlazoData.unshift({fecha:'',mes:'NUEVO',cantidad:0});buildAhorrosTable();save('largoP',largoPlazoData);}
+function addRowCortoP(){cortoPlazoData.unshift({fecha:'',mes:'NUEVO',cantidad:0});buildAhorrosTable();save('cortoP',cortoPlazoData);}
+
+// ══ ACTIVOS MODAL ══
+const CATS=['Equipo','Inmueble','Vehículo','Inversión','Otro'];
+function openModal(id){document.getElementById(id).classList.add('open');renderActivosEdit();}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function renderActivosEdit(){
+  const list=document.getElementById('activosEditList');
+  list.innerHTML=activosData.map((a,i)=>`<div class="edit-row">
+    <input type="text" value="${a.nombre}" placeholder="Nombre activo" oninput="activosData[${i}].nombre=this.value" style="flex:2">
+    <select onchange="activosData[${i}].categoria=this.value">${CATS.map(c=>`<option${c===a.categoria?' selected':''}>${c}</option>`).join('')}</select>
+    <input type="number" value="${a.valor}" placeholder="Valor MXN" oninput="activosData[${i}].valor=parseFloat(this.value)||0" style="width:120px;flex:none">
+    <button class="btn btn-danger" onclick="removeActivo(${i})">✕</button>
+  </div>`).join('');
+}
+function addActivoEditRow(){activosData.push({nombre:'',categoria:'Equipo',valor:0});renderActivosEdit();}
+function removeActivo(i){activosData.splice(i,1);renderActivosEdit();}
+function saveActivos(){closeModal('modalActivos');buildActivosTable();updateKPIs();buildCharts();save('activos',activosData);}
+
+// ══ DISTRIBUCIÓN ══
+function calcDistribucion(){
+  const ing=parseFloat(document.getElementById('ingresoMensual')?.value)||0;
+  const cats=[{label:'Gastos Básicos',p:45,c:'#e8e6df'},{label:'Inversión',p:30,c:'#aaaaaa'},{label:'Ocio',p:15,c:'#666666'},{label:'Ahorro',p:10,c:'#444444'}];
+  const cont=document.getElementById('distCards');if(!cont)return;
+  cont.innerHTML=cats.map(cat=>`<div class="card-sm">
+    <div class="stat-label">${cat.label}</div>
+    <div class="stat-val" style="color:${cat.c};font-size:18px">${fmt(ing*(cat.p/100))} MXN</div>
+    <div class="prog-bar"><div class="prog-fill" style="width:${cat.p}%;background:${cat.c}"></div></div>
+    <div style="font-size:11px;color:var(--text3);margin-top:4px">${cat.p}% del ingreso</div>
+  </div>`).join('');
+}
+
+// ══ PERIOD FILTERS ══
+function setNegPeriod(p,el){negPeriod=p;document.querySelectorAll('#negPeriodTabs .period-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');buildNegociosTable();}
+function setProfPeriod(p,el){profPeriod=p;document.querySelectorAll('#profPeriodTabs .period-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');buildProfitsTable();buildCharts();}
+
+// ══ COLLAPSIBLE ══
+function toggleDb(id){
+  const b=document.getElementById(id),a=document.getElementById(id+'Arrow');
+  b.classList.toggle('open');if(a)a.textContent=b.classList.contains('open')?'▲':'▼';
+}
+
+// ══ NAV ══
+function showPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.topnav-links a').forEach(a=>a.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');el.classList.add('active');
+}
+
+// ══ INIT ══
+document.addEventListener('DOMContentLoaded',()=>{
+  buildActivosTable();buildPatrimonioTable();buildBolsaTable();buildBonosTable();
+  buildEmergenciaTable();buildCryptoTable();buildNegociosTable();buildProfitsTable();
+  buildAhorrosTable();calcDistribucion();buildCharts();updateKPIs();
+});
+</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
+
+const firebaseConfig={
+  apiKey:"AIzaSyCPXjGg9WwZ-R0XJ_uU9cJSAqHcEJtMjfc",
+  authDomain:"eliamcobian-5eeb1.firebaseapp.com",
+  databaseURL:"https://eliamcobian-5eeb1-default-rtdb.firebaseio.com",
+  projectId:"eliamcobian-5eeb1",
+  storageBucket:"eliamcobian-5eeb1.firebasestorage.app",
+  messagingSenderId:"522931874926",
+  appId:"1:522931874926:web:85638c934c57e7a0b4ca7f"
+};
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
+
+window.fbSave=function(key,data){set(ref(db,'finanzas/'+key),JSON.parse(JSON.stringify(data)));};
+
+onValue(ref(db,'finanzas'),(snapshot)=>{
+  const data=snapshot.val();if(!data)return;
+  if(data.activos&&Array.isArray(data.activos))activosData=data.activos;
+  if(data.patrimonio&&Array.isArray(data.patrimonio))data.patrimonio.forEach((r,i)=>{if(patrimonioData[i])Object.assign(patrimonioData[i],r);});
+  if(data.bolsa&&Array.isArray(data.bolsa))data.bolsa.forEach((r,i)=>{if(bolsaData[i])Object.assign(bolsaData[i],r);});
+  if(data.bonos&&Array.isArray(data.bonos))data.bonos.forEach((r,i)=>{if(bonosData[i])Object.assign(bonosData[i],r);});
+  if(data.emergencia&&Array.isArray(data.emergencia))data.emergencia.forEach((r,i)=>{if(emergenciaData[i])Object.assign(emergenciaData[i],r);});
+  if(data.crypto&&Array.isArray(data.crypto))data.crypto.forEach((r,i)=>{if(cryptoData[i])Object.assign(cryptoData[i],r);});
+  if(data.negocios&&Array.isArray(data.negocios))data.negocios.forEach((r,i)=>{if(negociosData[i])Object.assign(negociosData[i],r);});
+  if(data.profits&&Array.isArray(data.profits))data.profits.forEach((r,i)=>{if(profitsData[i])Object.assign(profitsData[i],r);});
+  if(data.largoP&&Array.isArray(data.largoP))data.largoP.forEach((r,i)=>{if(largoPlazoData[i])Object.assign(largoPlazoData[i],r);});
+  if(data.cortoP&&Array.isArray(data.cortoP))data.cortoP.forEach((r,i)=>{if(cortoPlazoData[i])Object.assign(cortoPlazoData[i],r);});
+  buildActivosTable();buildPatrimonioTable();buildBolsaTable();buildBonosTable();
+  buildEmergenciaTable();buildCryptoTable();buildNegociosTable();buildProfitsTable();
+  buildAhorrosTable();calcDistribucion();buildCharts();updateKPIs();
+  showToast('Datos cargados desde Firebase ☁');
+},{onlyOnce:true});
+</script>
+</body>
+</html>
